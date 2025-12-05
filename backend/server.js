@@ -105,6 +105,7 @@ import productRoutes from './routes/products.js';
 import cartRoutes from './routes/cart.js';
 import orderRoutes from './routes/orders.js';
 import uploadRoutes from './routes/upload.js';
+import galleryRoutes from './routes/gallery.js';
 
 // Routes (these will now have DB connection available)
 app.use('/api/auth', authRoutes);
@@ -112,6 +113,7 @@ app.use('/api/products', productRoutes);
 app.use('/api/cart', cartRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/upload', uploadRoutes);
+app.use('/api/gallery', galleryRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

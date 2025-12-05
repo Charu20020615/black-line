@@ -42,6 +42,18 @@ export default function AdminDashboard() {
             <p className="text-gray-400 text-sm">Manage staff members</p>
           </div>
         </Link>
+        
+        <Link to="/dashboard/gallery">
+          <div className="bg-[#111111] p-6 rounded-2xl border border-[#2a2a2a] hover:border-[#d4af37] hover:shadow-[0_0_15px_#d4af37] transition cursor-pointer">
+            <div className="mb-4">
+              <svg className="w-12 h-12 text-[#d4af37]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+            </div>
+            <h2 className="text-xl font-semibold mb-2">Gallery Management</h2>
+            <p className="text-gray-400 text-sm">Manage gallery photos</p>
+          </div>
+        </Link>
       </div>
 
       <div className="bg-[#111111] p-6 rounded-2xl border border-[#2a2a2a] mt-8">
@@ -55,6 +67,11 @@ export default function AdminDashboard() {
           <Link to="/staff/add">
             <button className="px-6 py-2 rounded-lg border border-[#2a2a2a] hover:border-[#d4af37] transition">
               Add Staff Member
+            </button>
+          </Link>
+          <Link to="/dashboard/gallery">
+            <button className="px-6 py-2 rounded-lg border border-[#2a2a2a] hover:border-[#d4af37] transition">
+              Manage Gallery
             </button>
           </Link>
           <Link to="/">

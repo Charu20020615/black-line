@@ -14,6 +14,8 @@ import Cart from '../pages/Cart';
 import Checkout from '../pages/Checkout';
 import ProductManagement from '../pages/Admin/ProductManagement';
 import AdminDashboard from '../pages/Admin/AdminDashboard';
+import GalleryManagement from '../pages/Admin/GalleryManagement';
+import Gallery from '../pages/Gallery';
 import NotFound from '../pages/NotFound';
 
 export default function AppRoutes() {
@@ -25,6 +27,7 @@ export default function AppRoutes() {
       <Route path="/dashboard" element={<ProtectedRoute requireAdmin><AdminDashboard /></ProtectedRoute>} />
       <Route path="/dashboard/reports" element={<ProtectedRoute requireAdmin><Reports /></ProtectedRoute>} />
       <Route path="/dashboard/products" element={<ProtectedRoute requireAdmin><ProductManagement /></ProtectedRoute>} />
+      <Route path="/dashboard/gallery" element={<ProtectedRoute requireAdmin><GalleryManagement /></ProtectedRoute>} />
 
       <Route path="/staff" element={<ProtectedRoute requireAdmin><StaffList /></ProtectedRoute>} />
       <Route path="/staff/add" element={<ProtectedRoute requireAdmin><AddStaff /></ProtectedRoute>} />
@@ -37,6 +40,9 @@ export default function AppRoutes() {
       {/* Cart & Checkout */}
       <Route path="/cart" element={<Cart />} />
       <Route path="/checkout" element={<Checkout />} />
+
+      {/* Gallery */}
+      <Route path="/gallery" element={<Gallery />} />
 
       <Route path="/" element={<DashboardHome />} />
       <Route path="*" element={<NotFound />} />

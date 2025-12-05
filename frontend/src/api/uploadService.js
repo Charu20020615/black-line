@@ -1,4 +1,20 @@
-import axiosInstance from './axiosInstance';
+// Use the same base URL logic as axiosInstance
+const getApiBaseURL = () => {
+  const envUrl = import.meta.env.VITE_API_BASE_URL;
+  if (envUrl) {
+    // If it's a full URL, ensure it ends with /api
+    if (envUrl.startsWith('http')) {
+      // Remove trailing slash if present, then add /api
+      return envUrl.replace(/\/$/, '') + '/api';
+    }
+    // If it's a relative path, use as is
+    return envUrl;
+  }
+  // In production, use the backend URL; in development, use localhost
+  return import.meta.env.PROD 
+    ? 'https://black-line-back.vercel.app/api' 
+    : 'http://localhost:4000/api';
+};
 
 export const uploadImages = async (files) => {
   const formData = new FormData();
@@ -10,7 +26,7 @@ export const uploadImages = async (files) => {
 
   // Get token for auth
   const token = localStorage.getItem('token');
-  const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000/api';
+  const baseURL = getApiBaseURL();
 
   // Use fetch instead of axios to properly handle FormData
   const response = await fetch(`${baseURL}/upload`, {
@@ -35,7 +51,7 @@ export const uploadSingleImage = async (file) => {
   formData.append('image', file);
 
   const token = localStorage.getItem('token');
-  const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000/api';
+  const baseURL = getApiBaseURL();
 
   const response = await fetch(`${baseURL}/upload/single`, {
     method: 'POST',

@@ -17,8 +17,11 @@ const __dirname = path.dirname(__filename);
 const app = express();
 
 // Middleware
-app.use(cors());
 app.use(express.json());
+app.use(cors({
+  origin: '*',
+  credentials: false
+}));
 app.use(express.urlencoded({ extended: true }));
 
 // Serve static files from uploads folder

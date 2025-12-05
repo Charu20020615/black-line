@@ -51,14 +51,18 @@ export default function ProductManagement() {
   const handleFileSelect = (e) => {
     const files = Array.from(e.target.files);
     
-    // Validate file types
+    // Validate file types and size
+    const maxSize = 10 * 1024 * 1024; // 10MB
     const validFiles = files.filter(file => {
       const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
-      return validTypes.includes(file.type);
+      const isValidType = validTypes.includes(file.type);
+      const isValidSize = file.size <= maxSize;
+      return isValidType && isValidSize;
     });
 
     if (validFiles.length !== files.length) {
-      alert('Some files were skipped. Only image files (JPEG, PNG, GIF, WEBP) are allowed.');
+      const skippedCount = files.length - validFiles.length;
+      alert(`Some files were skipped. Only image files (JPEG, PNG, GIF, WEBP) up to 10MB are allowed. ${skippedCount} file(s) skipped.`);
     }
 
     setSelectedFiles([...selectedFiles, ...validFiles]);
@@ -310,7 +314,7 @@ export default function ProductManagement() {
                 onChange={handleFileSelect}
                 className="w-full px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg text-white focus:border-[#d4af37] focus:outline-none mb-4"
               />
-              <p className="text-gray-500 text-sm mb-4">You can select multiple images (JPEG, PNG, GIF, WEBP - Max 5MB each)</p>
+              <p className="text-gray-500 text-sm mb-4">You can select multiple images (JPEG, PNG, GIF, WEBP - Max 10MB each)</p>
 
               {/* Image Previews */}
               {imagePreviews.length > 0 && (

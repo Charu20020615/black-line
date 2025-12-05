@@ -40,6 +40,14 @@ export default function GalleryManagement() {
       return;
     }
 
+    // Validate file size (10MB limit)
+    const maxSize = 10 * 1024 * 1024; // 10MB
+    if (file.size > maxSize) {
+      alert(`File size is too large. Maximum file size is 10MB. Your file is ${(file.size / 1024 / 1024).toFixed(2)}MB.`);
+      e.target.value = ''; // Clear the input
+      return;
+    }
+
     setSelectedFile(file);
 
     // Create preview
@@ -151,7 +159,7 @@ export default function GalleryManagement() {
                 required
                 className="w-full px-4 py-2 bg-[#0a0a0a] border border-[#2a2a2a] rounded-lg text-white focus:border-[#d4af37] focus:outline-none mb-4"
               />
-              <p className="text-gray-500 text-sm mb-4">JPEG, PNG, GIF, WEBP - Max 5MB</p>
+              <p className="text-gray-500 text-sm mb-4">JPEG, PNG, GIF, WEBP - Max 10MB</p>
 
               {imagePreview && (
                 <div className="mt-4">

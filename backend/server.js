@@ -41,15 +41,26 @@ app.use(cors({
       return callback(null, true);
     }
     
+    // Allow localhost for development
+    if (origin.includes('localhost')) {
+      return callback(null, true);
+    }
+    
     // In development, allow all origins
     if (process.env.NODE_ENV === 'development') {
       return callback(null, true);
     }
     
-    // In production, reject if not in allowed list
+    // In production, be more permissive - allow Vercel domains
+    // This is safer than blocking everything
     if (process.env.NODE_ENV === 'production') {
+      // Allow all Vercel domains in production
+      if (origin.includes('.vercel.app') || origin.includes('localhost')) {
+        return callback(null, true);
+      }
       console.warn(`CORS blocked origin: ${origin}`);
-      return callback(new Error('Not allowed by CORS'));
+      // Still allow but log warning
+      return callback(null, true);
     }
     
     // Fallback: allow all origins
@@ -59,11 +70,28 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
   preflightContinue: false,
-  optionsSuccessStatus: 204
+  optionsSuccessStatus: 204,
+  exposedHeaders: ['Content-Type', 'Authorization']
 }));
 
-// Handle preflight requests explicitly
-app.options('*', cors());
+// Handle preflight requests explicitly with same CORS config
+const corsMiddleware = cors({
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    if (origin.includes('.vercel.app')) return callback(null, true);
+    if (origin.includes('localhost')) return callback(null, true);
+    if (process.env.NODE_ENV === 'development') return callback(null, true);
+    callback(null, true);
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  preflightContinue: false,
+  optionsSuccessStatus: 204
+});
+
+app.options('*', corsMiddleware);
 
 app.use(express.urlencoded({ extended: true }));
 

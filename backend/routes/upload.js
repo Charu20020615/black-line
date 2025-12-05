@@ -3,14 +3,48 @@ import upload from '../middleware/upload.js';
 import { authenticate, isAdmin } from '../middleware/auth.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import cors from 'cors';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const router = express.Router();
 
+// CORS configuration for upload routes
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Allow requests with no origin
+    if (!origin) return callback(null, true);
+    
+    // Allow Vercel domains
+    if (origin.includes('.vercel.app')) {
+      return callback(null, true);
+    }
+    
+    // Allow localhost for development
+    if (origin.includes('localhost')) {
+      return callback(null, true);
+    }
+    
+    // Allow all in development
+    if (process.env.NODE_ENV === 'development') {
+      return callback(null, true);
+    }
+    
+    callback(null, true);
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  preflightContinue: false,
+  optionsSuccessStatus: 204
+};
+
+// Handle preflight requests for upload routes
+router.options('*', cors(corsOptions));
+
 // Upload multiple images
-router.post('/', authenticate, isAdmin, (req, res, next) => {
+router.post('/', cors(corsOptions), authenticate, isAdmin, (req, res, next) => {
   upload.array('images', 10)(req, res, (err) => {
     if (err) {
       return res.status(400).json({ message: err.message });
@@ -36,7 +70,7 @@ router.post('/', authenticate, isAdmin, (req, res, next) => {
 });
 
 // Upload single image
-router.post('/single', authenticate, isAdmin, (req, res, next) => {
+router.post('/single', cors(corsOptions), authenticate, isAdmin, (req, res, next) => {
   upload.single('image')(req, res, (err) => {
     if (err) {
       return res.status(400).json({ message: err.message });

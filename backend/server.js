@@ -57,21 +57,22 @@ app.use(express.urlencoded({ extended: true }));
 // Serve static files from uploads folder
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// Import routes
-import authRoutes from './routes/auth.js';
-import productRoutes from './routes/products.js';
-import cartRoutes from './routes/cart.js';
-import orderRoutes from './routes/orders.js';
-import uploadRoutes from './routes/upload.js';
+// Middleware to ensure DB connection before routes (lazy connection for serverless)
+// IMPORTANT: This must be BEFORE route definitions
+app.use(async (req, res, next) => {
+  try {
+    await connectDB();
+    next();
+  } catch (error) {
+    console.error('Database connection error:', error);
+    res.status(500).json({ 
+      message: 'Database connection failed', 
+      error: process.env.NODE_ENV === 'development' ? error.message : 'Database unavailable'
+    });
+  }
+});
 
-// Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/products', productRoutes);
-app.use('/api/cart', cartRoutes);
-app.use('/api/orders', orderRoutes);
-app.use('/api/upload', uploadRoutes);
-
-// Health check
+// Health check (before routes, but after DB middleware)
 app.get('/api/health', async (req, res) => {
   try {
     await connectDB();
@@ -85,19 +86,19 @@ app.get('/api/health', async (req, res) => {
   }
 });
 
-// Middleware to ensure DB connection before routes (lazy connection for serverless)
-app.use(async (req, res, next) => {
-  try {
-    await connectDB();
-    next();
-  } catch (error) {
-    console.error('Database connection error:', error);
-    res.status(500).json({ 
-      message: 'Database connection failed', 
-      error: process.env.NODE_ENV === 'development' ? error.message : 'Database unavailable'
-    });
-  }
-});
+// Import routes
+import authRoutes from './routes/auth.js';
+import productRoutes from './routes/products.js';
+import cartRoutes from './routes/cart.js';
+import orderRoutes from './routes/orders.js';
+import uploadRoutes from './routes/upload.js';
+
+// Routes (these will now have DB connection available)
+app.use('/api/auth', authRoutes);
+app.use('/api/products', productRoutes);
+app.use('/api/cart', cartRoutes);
+app.use('/api/orders', orderRoutes);
+app.use('/api/upload', uploadRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

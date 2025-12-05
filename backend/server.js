@@ -8,9 +8,6 @@ import connectDB from './config/db.js';
 // Load environment variables
 dotenv.config();
 
-// Connect to database
-connectDB();
-
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -75,8 +72,31 @@ app.use('/api/orders', orderRoutes);
 app.use('/api/upload', uploadRoutes);
 
 // Health check
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'OK', message: 'Server is running' });
+app.get('/api/health', async (req, res) => {
+  try {
+    await connectDB();
+    res.json({ status: 'OK', message: 'Server is running', db: 'connected' });
+  } catch (error) {
+    res.status(500).json({ 
+      status: 'ERROR', 
+      message: 'Database connection failed', 
+      error: process.env.NODE_ENV === 'development' ? error.message : 'Database unavailable'
+    });
+  }
+});
+
+// Middleware to ensure DB connection before routes (lazy connection for serverless)
+app.use(async (req, res, next) => {
+  try {
+    await connectDB();
+    next();
+  } catch (error) {
+    console.error('Database connection error:', error);
+    res.status(500).json({ 
+      message: 'Database connection failed', 
+      error: process.env.NODE_ENV === 'development' ? error.message : 'Database unavailable'
+    });
+  }
 });
 
 // Error handling middleware
@@ -94,8 +114,14 @@ export default app;
 // Only start server if not in Vercel environment
 if (process.env.VERCEL !== '1') {
   const PORT = process.env.PORT || 4000;
-  app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+  app.listen(PORT, async () => {
+    try {
+      await connectDB();
+      console.log(`Server running on port ${PORT}`);
+    } catch (error) {
+      console.error('Failed to connect to database:', error);
+      process.exit(1);
+    }
   });
 }
 

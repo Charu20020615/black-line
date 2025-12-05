@@ -1,0 +1,17 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* { box-sizing: border-box; }
+html, body, #root { height: 100%; }
+body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji"; }
+
+@layer utilities {
+  .gold-text {
+    @apply bg-gradient-to-r from-[#b48a2c] via-[#d4af37] to-[#f6e27a] bg-clip-text text-transparent;
+  }
+  .gold-btn {
+    @apply bg-gradient-to-r from-[#b48a2c] via-[#d4af37] to-[#f6e27a] text-black font-semibold;
+  }
+}
+

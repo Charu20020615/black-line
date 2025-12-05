@@ -21,6 +21,7 @@ const allowedOrigins = [
   'http://localhost:5173',
   'http://localhost:3000',
   'http://localhost:5174',
+  'https://black-line-pi.vercel.app', // Production frontend
   process.env.FRONTEND_URL
 ].filter(Boolean); // Remove undefined values
 
@@ -29,18 +30,30 @@ app.use(cors({
     // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true);
     
-    // Allow requests from allowed origins or if in development
-    if (allowedOrigins.includes(origin) || process.env.NODE_ENV === 'development') {
-      callback(null, true);
-    } else {
-      // In production, only allow specific origins
-      if (process.env.NODE_ENV === 'production' && allowedOrigins.length > 0) {
-        callback(new Error('Not allowed by CORS'));
-      } else {
-        // Fallback: allow all origins if no specific origins are set
-        callback(null, true);
-      }
+    // Check if origin is in allowed list
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
     }
+    
+    // Allow Vercel preview deployments (any *.vercel.app domain)
+    // This handles preview deployments automatically
+    if (origin.includes('.vercel.app')) {
+      return callback(null, true);
+    }
+    
+    // In development, allow all origins
+    if (process.env.NODE_ENV === 'development') {
+      return callback(null, true);
+    }
+    
+    // In production, reject if not in allowed list
+    if (process.env.NODE_ENV === 'production') {
+      console.warn(`CORS blocked origin: ${origin}`);
+      return callback(new Error('Not allowed by CORS'));
+    }
+    
+    // Fallback: allow all origins
+    callback(null, true);
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],

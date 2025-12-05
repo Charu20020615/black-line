@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-// Use environment variable for API URL, fallback to relative path for production
+// Use environment variable for API URL, fallback to backend URL for production
 const getApiBaseURL = () => {
   const envUrl = import.meta.env.VITE_API_BASE_URL;
   if (envUrl) {
@@ -12,8 +12,10 @@ const getApiBaseURL = () => {
     // If it's a relative path, use as is
     return envUrl;
   }
-  // In production on Vercel, use relative path; in development, use localhost
-  return import.meta.env.PROD ? '/api' : 'http://localhost:4000/api';
+  // In production, use the backend URL; in development, use localhost
+  return import.meta.env.PROD 
+    ? 'https://black-line-back.vercel.app/api' 
+    : 'http://localhost:4000/api';
 };
 
 const axiosInstance = axios.create({

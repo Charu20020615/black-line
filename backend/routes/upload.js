@@ -47,7 +47,11 @@ router.options('*', cors(corsOptions));
 router.post('/', cors(corsOptions), authenticate, isAdmin, (req, res, next) => {
   upload.array('images', 10)(req, res, (err) => {
     if (err) {
-      return res.status(400).json({ message: err.message });
+      // Ensure CORS headers are set even on error
+      cors(corsOptions)(req, res, () => {
+        return res.status(400).json({ message: err.message });
+      });
+      return;
     }
     next();
   });
@@ -73,7 +77,11 @@ router.post('/', cors(corsOptions), authenticate, isAdmin, (req, res, next) => {
 router.post('/single', cors(corsOptions), authenticate, isAdmin, (req, res, next) => {
   upload.single('image')(req, res, (err) => {
     if (err) {
-      return res.status(400).json({ message: err.message });
+      // Ensure CORS headers are set even on error
+      cors(corsOptions)(req, res, () => {
+        return res.status(400).json({ message: err.message });
+      });
+      return;
     }
     next();
   });

@@ -53,17 +53,35 @@ export const uploadSingleImage = async (file) => {
   const token = localStorage.getItem('token');
   const baseURL = getApiBaseURL();
 
+  if (!token) {
+    throw new Error('You must be logged in to upload images. Please log in and try again.');
+  }
+
   const response = await fetch(`${baseURL}/upload/single`, {
     method: 'POST',
     headers: {
-      'Authorization': token ? `Bearer ${token}` : '',
+      'Authorization': `Bearer ${token}`,
     },
     body: formData
   });
 
   if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || 'Upload failed');
+    let errorMessage = 'Upload failed';
+    try {
+      const error = await response.json();
+      errorMessage = error.message || errorMessage;
+    } catch (e) {
+      // If response is not JSON, use status text
+      errorMessage = response.statusText || errorMessage;
+    }
+    
+    if (response.status === 401) {
+      throw new Error('Authentication failed. Please log in again.');
+    } else if (response.status === 403) {
+      throw new Error('You do not have permission to upload images. Admin access required.');
+    } else {
+      throw new Error(errorMessage);
+    }
   }
 
   return await response.json();

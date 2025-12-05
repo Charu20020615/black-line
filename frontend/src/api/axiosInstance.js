@@ -4,8 +4,13 @@ import axios from 'axios';
 const getApiBaseURL = () => {
   const envUrl = import.meta.env.VITE_API_BASE_URL;
   if (envUrl) {
-    // If it's a full URL, use it; otherwise treat as relative path
-    return envUrl.startsWith('http') ? envUrl : envUrl;
+    // If it's a full URL, ensure it ends with /api
+    if (envUrl.startsWith('http')) {
+      // Remove trailing slash if present, then add /api
+      return envUrl.replace(/\/$/, '') + '/api';
+    }
+    // If it's a relative path, use as is
+    return envUrl;
   }
   // In production on Vercel, use relative path; in development, use localhost
   return import.meta.env.PROD ? '/api' : 'http://localhost:4000/api';

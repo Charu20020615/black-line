@@ -26,7 +26,8 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install production dependencies (express for serving static files)
-RUN npm ci --only=production
+# Using npm install instead of npm ci to handle lock file sync issues
+RUN npm install --omit=dev
 
 # Copy built files and server script from builder
 COPY --from=builder /app/dist ./dist

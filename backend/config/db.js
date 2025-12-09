@@ -8,6 +8,16 @@ if (!cached) {
 }
 
 const connectDB = async () => {
+  // Validate MONGODB_URI is set
+  if (!process.env.MONGODB_URI) {
+    const error = new Error(
+      'MONGODB_URI environment variable is not set. Please set it in Railway dashboard under Variables.'
+    );
+    console.error('❌ MongoDB Configuration Error:', error.message);
+    console.error('📝 To fix: Go to Railway → Your Backend Service → Variables → Add MONGODB_URI');
+    throw error;
+  }
+
   // If already connected, return existing connection
   if (cached.conn) {
     return cached.conn;
@@ -20,10 +30,10 @@ const connectDB = async () => {
     };
 
     cached.promise = mongoose.connect(process.env.MONGODB_URI, opts).then((mongoose) => {
-      console.log('MongoDB Connected');
+      console.log('✅ MongoDB Connected');
       return mongoose;
     }).catch((error) => {
-      console.error(`MongoDB Connection Error: ${error.message}`);
+      console.error(`❌ MongoDB Connection Error: ${error.message}`);
       cached.promise = null;
       throw error;
     });

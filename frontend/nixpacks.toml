@@ -12,5 +12,5 @@ cmds = [
 ]
 
 [start]
-cmd = "npx serve -s dist -l $PORT"
+cmd = "node server.js"
 

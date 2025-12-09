@@ -15,16 +15,22 @@ COPY . .
 # Build the app
 RUN npm run build
 
-# Production stage with serve
+# Note: server.js will be copied in production stage
+
+# Production stage
 FROM node:18-alpine
 
 WORKDIR /app
 
-# Install serve globally
-RUN npm install -g serve
+# Copy package files
+COPY package*.json ./
 
-# Copy built files from builder
+# Install production dependencies (express for serving static files)
+RUN npm ci --only=production
+
+# Copy built files and server script from builder
 COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/server.js ./server.js
 
 # Expose port (Railway will set PORT env var)
 EXPOSE 3000
@@ -34,5 +40,5 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD node -e "require('http').get('http://localhost:' + (process.env.PORT || 3000), (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"
 
 # Start the server
-CMD ["sh", "-c", "serve -s dist -l ${PORT:-3000}"]
+CMD ["node", "server.js"]
 

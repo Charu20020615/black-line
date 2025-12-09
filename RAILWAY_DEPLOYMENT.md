@@ -1,6 +1,6 @@
-# Railway Deployment Guide
+# Railway Deployment Guide - Separate Frontend & Backend
 
-This guide will help you deploy the Black Line application on Railway.
+This guide will help you deploy the Black Line application on Railway with **separate services** for frontend and backend.
 
 ## Prerequisites
 
@@ -8,125 +8,153 @@ This guide will help you deploy the Black Line application on Railway.
 2. A MongoDB database (MongoDB Atlas recommended)
 3. Git repository connected to Railway
 
-## Deployment Steps
+## Deployment Overview
 
-### Option 1: Deploy Backend Only (Recommended for Hobby Plan)
-
-Since Railway Hobby plan has resource limits, it's recommended to deploy the backend on Railway and host the frontend separately (e.g., Vercel, Netlify).
-
-#### Step 1: Create a New Project on Railway
-
-1. Go to [Railway](https://railway.app)
-2. Click "New Project"
-3. Select "Deploy from GitHub repo" (or Git provider of your choice)
-4. Select your repository
-
-#### Step 2: Configure Backend Service
-
-1. Railway will auto-detect the backend folder
-2. Set the root directory to `backend` in Railway settings
-3. Railway will automatically detect Node.js and install dependencies
-
-#### Step 3: Set Environment Variables
-
-In Railway dashboard, go to your service → Variables tab and add:
-
-```
-PORT=4000
-NODE_ENV=production
-MONGODB_URI=your-mongodb-connection-string
-JWT_SECRET=your-secret-jwt-key
-FRONTEND_URL=https://your-frontend-domain.com
-```
-
-#### Step 4: Deploy
-
-1. Railway will automatically deploy when you push to your main branch
-2. Or click "Deploy" in the Railway dashboard
-
-#### Step 5: Get Your Backend URL
-
-1. After deployment, Railway will provide a public URL (e.g., `https://your-app.railway.app`)
-2. Copy this URL
-
-#### Step 6: Update Frontend API Configuration
-
-Update `frontend/src/api/axiosInstance.js` or set environment variable:
-
-```
-VITE_API_BASE_URL=https://your-backend.railway.app
-```
-
-Then deploy your frontend to Vercel/Netlify with this environment variable.
+You'll create **two separate services** in Railway:
+- **Backend Service**: Node.js/Express API
+- **Frontend Service**: React/Vite static site
 
 ---
 
-### Option 2: Deploy Both Backend and Frontend (Monorepo)
+## Step 1: Create Railway Project
 
-If you want to deploy both services on Railway:
+1. Go to [Railway](https://railway.app)
+2. Click **"New Project"**
+3. Select **"Deploy from GitHub repo"** (or your Git provider)
+4. Select your repository
 
-#### Step 1: Create Two Services
+---
 
-1. Create first service for **Backend**:
-   - Root directory: `backend`
-   - Build command: `npm install`
-   - Start command: `npm start`
+## Step 2: Deploy Backend Service
 
-2. Create second service for **Frontend**:
-   - Root directory: `frontend`
-   - Build command: `npm install && npm run build`
-   - Start command: `npx serve -s dist -l 3000`
-   - Or use a static file server
+### 2.1 Create Backend Service
 
-#### Step 2: Set Environment Variables
+1. In your Railway project, click **"+ New"** → **"GitHub Repo"**
+2. Select the same repository
+3. Railway will auto-detect the project
 
-**Backend Service:**
+### 2.2 Configure Backend Service
+
+1. Go to **Settings** → **Root Directory**
+2. Set Root Directory to: `backend`
+3. Railway will auto-detect Node.js (or use Dockerfile if present)
+
+### 2.3 Set Backend Environment Variables
+
+Go to **Variables** tab and add:
+
 ```
-PORT=4000
 NODE_ENV=production
 MONGODB_URI=your-mongodb-connection-string
 JWT_SECRET=your-secret-jwt-key
 FRONTEND_URL=https://your-frontend-service.railway.app
 ```
 
-**Frontend Service:**
-```
-VITE_API_BASE_URL=https://your-backend-service.railway.app
-```
+**Note:** `PORT` is automatically set by Railway - don't override it.
 
-#### Step 3: Deploy Both Services
+### 2.4 Deploy Backend
 
-Railway will deploy both services automatically.
+1. Railway will automatically deploy
+2. Wait for deployment to complete
+3. **Copy the backend URL** (e.g., `https://your-backend.railway.app`)
+4. Test it: Visit `https://your-backend.railway.app/api/health`
 
 ---
 
-## Using Docker (Alternative)
+## Step 3: Deploy Frontend Service
 
-If you prefer Docker deployment:
+### 3.1 Create Frontend Service
 
-1. Railway will automatically detect the `Dockerfile` in the root
-2. Make sure to set the root directory to `backend` in Railway settings
-3. The Dockerfile is configured to build and run the backend service
+1. In the same Railway project, click **"+ New"** → **"GitHub Repo"**
+2. Select the same repository again
+3. This creates a second service
+
+### 3.2 Configure Frontend Service
+
+1. Go to **Settings** → **Root Directory**
+2. Set Root Directory to: `frontend`
+3. Railway will auto-detect Node.js (or use Dockerfile if present)
+
+### 3.3 Set Frontend Environment Variables
+
+Go to **Variables** tab and add:
+
+```
+VITE_API_BASE_URL=https://your-backend.railway.app
+PORT=3000
+```
+
+**Important:** Replace `https://your-backend.railway.app` with your actual backend URL from Step 2.4
+
+### 3.4 Deploy Frontend
+
+1. Railway will automatically deploy
+2. Wait for deployment to complete
+3. **Copy the frontend URL** (e.g., `https://your-frontend.railway.app`)
+
+---
+
+## Step 4: Update CORS Configuration
+
+After getting your frontend URL:
+
+1. Go back to **Backend Service** → **Variables**
+2. Update `FRONTEND_URL` with your frontend Railway URL:
+   ```
+   FRONTEND_URL=https://your-frontend.railway.app
+   ```
+3. Railway will automatically redeploy the backend
+
+---
+
+## Deployment Methods
+
+### Method 1: Using Nixpacks (Auto-detected)
+
+Railway will automatically use the `nixpacks.toml` files in each directory:
+- `backend/nixpacks.toml` - for backend service
+- `frontend/nixpacks.toml` - for frontend service
+
+### Method 2: Using Dockerfiles
+
+If you prefer Docker:
+- `Dockerfile` (root) - for backend service (set root directory to `backend`)
+- `frontend/Dockerfile` - for frontend service (set root directory to `frontend`)
+
+Railway will automatically detect and use the Dockerfiles.
+
+### Method 3: Manual Configuration
+
+If auto-detection doesn't work, manually set in Railway:
+
+**Backend Service:**
+- Build Command: `npm install` (or leave empty)
+- Start Command: `npm start`
+
+**Frontend Service:**
+- Build Command: `npm install && npm run build`
+- Start Command: `npx serve -s dist -l $PORT`
 
 ---
 
 ## Environment Variables Reference
 
-### Backend Required Variables
+### Backend Service Variables
 
-| Variable | Description | Example |
-|----------|-------------|---------|
-| `PORT` | Server port (Railway sets this automatically) | `4000` |
-| `NODE_ENV` | Environment mode | `production` |
-| `MONGODB_URI` | MongoDB connection string | `mongodb+srv://...` |
-| `JWT_SECRET` | Secret key for JWT tokens | `your-secret-key` |
-| `FRONTEND_URL` | Frontend URL for CORS | `https://your-frontend.com` |
+| Variable | Required | Description | Example |
+|----------|----------|-------------|---------|
+| `PORT` | Auto-set | Server port (Railway sets automatically) | `4000` |
+| `NODE_ENV` | Yes | Environment mode | `production` |
+| `MONGODB_URI` | Yes | MongoDB connection string | `mongodb+srv://...` |
+| `JWT_SECRET` | Yes | Secret key for JWT tokens | `your-secret-key` |
+| `FRONTEND_URL` | Yes | Frontend URL for CORS | `https://your-frontend.railway.app` |
 
-### Frontend Required Variables
+### Frontend Service Variables
 
-| Variable | Description | Example |
-|----------|-------------|---------|
-| `VITE_API_BASE_URL` | Backend API URL | `https://your-backend.railway.app` |
+| Variable | Required | Description | Example |
+|----------|----------|-------------|---------|
+| `VITE_API_BASE_URL` | Yes | Backend API URL (without /api) | `https://your-backend.railway.app` |
+| `PORT` | Auto-set | Server port (Railway sets automatically) | `3000` |
 
 ---
 

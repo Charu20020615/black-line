@@ -22,7 +22,9 @@ const allowedOrigins = [
   'http://localhost:3000',
   'http://localhost:5174',
   'https://black-line-pi.vercel.app', // Production frontend
-  process.env.FRONTEND_URL
+  process.env.FRONTEND_URL,
+  process.env.RAILWAY_PUBLIC_DOMAIN, // Railway public domain
+  process.env.RAILWAY_STATIC_URL // Railway static URL
 ].filter(Boolean); // Remove undefined values
 
 app.use(cors({
@@ -41,6 +43,11 @@ app.use(cors({
       return callback(null, true);
     }
     
+    // Allow Railway domains (any *.railway.app domain)
+    if (origin.includes('.railway.app')) {
+      return callback(null, true);
+    }
+    
     // Allow localhost for development
     if (origin.includes('localhost')) {
       return callback(null, true);
@@ -51,11 +58,11 @@ app.use(cors({
       return callback(null, true);
     }
     
-    // In production, be more permissive - allow Vercel domains
+    // In production, be more permissive - allow Vercel and Railway domains
     // This is safer than blocking everything
     if (process.env.NODE_ENV === 'production') {
-      // Allow all Vercel domains in production
-      if (origin.includes('.vercel.app') || origin.includes('localhost')) {
+      // Allow all Vercel and Railway domains in production
+      if (origin.includes('.vercel.app') || origin.includes('.railway.app') || origin.includes('localhost')) {
         return callback(null, true);
       }
       console.warn(`CORS blocked origin: ${origin}`);
@@ -80,6 +87,7 @@ const corsMiddleware = cors({
     if (!origin) return callback(null, true);
     if (allowedOrigins.includes(origin)) return callback(null, true);
     if (origin.includes('.vercel.app')) return callback(null, true);
+    if (origin.includes('.railway.app')) return callback(null, true);
     if (origin.includes('localhost')) return callback(null, true);
     if (process.env.NODE_ENV === 'development') return callback(null, true);
     callback(null, true);
